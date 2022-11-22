@@ -1,0 +1,32 @@
+{
+  "name": "caddy-baron",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ianbaron/caddy-baron.git"
+  },
+  "keywords": [
+    "caddy",
+    "reverse",
+    "proxy",
+    "tls",
+    "ssl"
+  ],
+  "author": "Ian Baron",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ianbaron/caddy-baron/issues"
+  },
+  "homepage": "https://github.com/ianbaron/caddy-baron#readme",
+  "dependencies": {
+    "decompress": "^4.2.1",
+    "got": "^12.5.3",
+    "node-downloader-helper": "^2.1.4"
+  }
+}
