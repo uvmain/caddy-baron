@@ -1,7 +1,7 @@
 {
   "name": "caddy-baron",
   "version": "1.0.0",
-  "description": "",
+  "description": "Install Caddy",
   "main": "index.mjs",
   "scripts": {
     "postinstall": "node index.mjs postinstall",
