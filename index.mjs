@@ -1,7 +1,6 @@
 import decompress from 'decompress';
-import fs from 'fs';
+import fs, { createWriteStream } from 'fs';
 import got from 'got';
-import ndh from 'node-downloader-helper';
 
 let downloadDir = process.cwd().split('caddy-baron')[0];
 downloadDir = `${downloadDir}.bin`;
@@ -10,48 +9,38 @@ console.info(process.argv)
 
 switch (process.argv[2]) {
   case "postinstall":
-    let version;
+    //get the latest release version
+    const latest = await got('https://api.github.com/repos/caddyserver/caddy/releases/latest').json();
+    const version = latest.tag_name;
 
-    // check if env var Caddy version is valid
-    const envVersion = process.env.CADDYVERSION;
-    if (envVersion != undefined) {
-    const versionCheck = await got('https://api.github.com/repos/caddyserver/caddy/tags').json();
-      if ((versionCheck.filter(release => release.name == envVersion)[0]) != undefined) {
-        version = envVersion;
-      }
-    }
-    if (version == undefined) {
-      //get the latest release version
-      const latest = await got('https://api.github.com/repos/caddyserver/caddy/releases/latest').json();
-      version = latest.name;
-    }
-
-    // build Caddy download string
-    let platform = 'linux';
-    let ext = 'tar.gz';
-    let arch = 'amd64';
+    // build mkcert download string
+    let platform = process.platform;
+    let ext = 'tar.gz'
 
     switch(process.platform) {
       case 'darwin':
         platform = 'mac';
-      case 'windows':
+      case 'win32':
         platform = 'win32';
         ext = 'zip';
     }
 
-    switch(process.arch) {
-      case 'arm64': arch = 'arm64';
-      case 'arm': arch = 'arm';
-    }
+    const arch = (process.arch == 'x64') ? 'amd64' : process.arch
 
     const fileString = `caddy_${version.substr(1)}_${platform}_${arch}.${ext}`;
+
+    console.log(fileString);
+
     const downloadString = `https://github.com/caddyserver/caddy/releases/download/${version}/${fileString}`;
+
+    console.log(downloadString);
 
     fs.mkdir(downloadDir, { recursive: true }, (err) => {
       if (err) throw err;
     });
 
-    const saveString = (ext === 'zip') ? 'caddy.exe' : 'caddy'
+    const downloadStream = got.stream(downloadString)
+    const fileStream = createWriteStream(`${downloadDir}/${fileString}`)
 
     async function unzip() {
       await decompress(`${downloadDir}/${fileString}`, downloadDir, {
@@ -60,12 +49,20 @@ switch (process.argv[2]) {
       fs.unlinkSync(`${downloadDir}/${fileString}`);
     }
 
-    const dl = new ndh.DownloaderHelper(downloadString, downloadDir);
-    dl.on('end', () => {
+    downloadStream
+      .on('error', (error) => {
+        console.log(`Failed to download caddy: ${error}`)
+      })
+    fileStream
+    .on('error', (error) => {
+      console.log(`Failed to save caddy: ${error}`)
+    })
+    .on("finish", () => {
       unzip();
     });
-    dl.on('error', (err) => console.log('Caddy Download Failed', err));
-    dl.start().catch(err => console.error(err));
+
+    downloadStream.pipe(fileStream)
+
     break;
 
   case "preuninstall":

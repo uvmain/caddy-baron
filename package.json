@@ -1,6 +1,6 @@
 {
   "name": "caddy-baron",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Install Caddy",
   "main": "index.mjs",
   "scripts": {
@@ -26,7 +26,6 @@
   "homepage": "https://github.com/ianbaron/caddy-baron#readme",
   "dependencies": {
     "decompress": "^4.2.1",
-    "got": "^12.5.3",
-    "node-downloader-helper": "^2.1.4"
+    "got": "^12.5.3"
   }
 }
