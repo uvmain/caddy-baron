@@ -1,6 +1,6 @@
 {
   "name": "caddy-baron",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Install Caddy",
   "main": "index.mjs",
   "scripts": {

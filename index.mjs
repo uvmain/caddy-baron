@@ -21,7 +21,7 @@ switch (process.argv[2]) {
       case 'darwin':
         platform = 'mac';
       case 'win32':
-        platform = 'win32';
+        platform = 'windows';
         ext = 'zip';
     }
 
