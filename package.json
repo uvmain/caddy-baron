@@ -26,6 +26,6 @@
   "homepage": "https://github.com/ianbaron/caddy-baron#readme",
   "dependencies": {
     "decompress": "^4.2.1",
-    "got": "^12.5.3"
+    "got": "^13.0.0"
   }
 }
