@@ -1,6 +1,6 @@
 {
   "name": "caddy-baron",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Install Caddy",
   "main": "index.mjs",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ianbaron/caddy-baron.git"
+    "url": "git+https://github.com/uvmain/caddy-baron.git"
   },
   "keywords": [
     "caddy",
@@ -21,9 +21,9 @@
   "author": "Ian Baron",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ianbaron/caddy-baron/issues"
+    "url": "https://github.com/uvmain/caddy-baron/issues"
   },
-  "homepage": "https://github.com/ianbaron/caddy-baron#readme",
+  "homepage": "https://github.com/uvmain/caddy-baron#readme",
   "dependencies": {
     "decompress": "^4.2.1",
     "got": "^13.0.0"
