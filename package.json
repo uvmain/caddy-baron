@@ -1,11 +1,12 @@
 {
   "name": "caddy-baron",
-  "version": "1.2.2",
+  "version": "2.0.0",
   "description": "Install Caddy",
-  "main": "index.mjs",
+  "bin": {
+    "caddy": "./caddy"
+  },
   "scripts": {
-    "postinstall": "node index.mjs postinstall",
-    "preuninstall": "node index.mjs preuninstall"
+    "install": "node index.mjs"
   },
   "repository": {
     "type": "git",
@@ -25,7 +26,6 @@
   },
   "homepage": "https://github.com/uvmain/caddy-baron#readme",
   "dependencies": {
-    "decompress": "^4.2.1",
-    "got": "^13.0.0"
+    "decompress": "^4.2.1"
   }
 }

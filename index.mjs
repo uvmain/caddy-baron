@@ -1,71 +1,81 @@
 import decompress from 'decompress';
-import fs, { createWriteStream } from 'fs';
-import got from 'got';
+import fs from 'fs';
+import https from 'https';
+import { URL } from 'url';
 
-let downloadDir = process.cwd().split('caddy-baron')[0];
-downloadDir = `${downloadDir}.bin`;
+let fileString = '';
 
-console.info(process.argv)
+async function getLatestReleaseTag() {
+  const latestUrl = new URL('https://api.github.com/repos/caddyserver/caddy/releases/latest');
+  latestUrl.headers = { 'User-Agent': 'Node.js' };
 
-switch (process.argv[2]) {
-  case "postinstall":
-    //get the latest release version
-    const latest = await got('https://api.github.com/repos/caddyserver/caddy/releases/latest').json();
-    const version = latest.tag_name;
-
-    // build mkcert download string
-    let platform = process.platform;
-    let ext = 'tar.gz'
-
-    switch(process.platform) {
-      case 'darwin':
-        platform = 'mac';
-      case 'win32':
-        platform = 'windows';
-        ext = 'zip';
-    }
-
-    const arch = (process.arch == 'x64') ? 'amd64' : process.arch
-
-    const fileString = `caddy_${version.substr(1)}_${platform}_${arch}.${ext}`;
-
-    console.log(fileString);
-
-    const downloadString = `https://github.com/caddyserver/caddy/releases/download/${version}/${fileString}`;
-
-    console.log(downloadString);
-
-    fs.mkdir(downloadDir, { recursive: true }, (err) => {
-      if (err) throw err;
+  return new Promise((resolve, reject) => {
+    https.get(latestUrl, (res) => {
+      if (res.statusCode === 302 && res.headers.location) {
+        // If a redirect is encountered, resolve with the new URL
+        resolve(new URL(res.headers.location));
+      } else {
+        let rawData = '';
+        res.on('data', (chunk) => {
+          rawData += chunk;
+        });
+        res.on('end', () => {
+          const parsedData = JSON.parse(rawData);
+          resolve(parsedData.tag_name);
+        });
+      }
     });
-
-    const downloadStream = got.stream(downloadString)
-    const fileStream = createWriteStream(`${downloadDir}/${fileString}`)
-
-    async function unzip() {
-      await decompress(`${downloadDir}/${fileString}`, downloadDir, {
-        filter: file => file.path.includes("caddy")
-      });
-      fs.unlinkSync(`${downloadDir}/${fileString}`);
-    }
-
-    downloadStream
-      .on('error', (error) => {
-        console.log(`Failed to download caddy: ${error}`)
-      })
-    fileStream
-    .on('error', (error) => {
-      console.log(`Failed to save caddy: ${error}`)
-    })
-    .on("finish", () => {
-      unzip();
-    });
-
-    downloadStream.pipe(fileStream)
-
-    break;
-
-  case "preuninstall":
-    await fs.unlinkSync(`${downloadDir}${process.platform === 'win32' ? '.exe' : ''}`);
-    break;
+  });
 }
+
+async function getLatestReleaseUrl() {
+  const version = await getLatestReleaseTag();
+  let platform = process.platform;
+  let ext = 'tar.gz'
+
+  switch(process.platform) {
+    case 'darwin':
+      platform = 'mac';
+    case 'win32':
+      platform = 'windows';
+      ext = 'zip';
+  }
+
+  const arch = (process.arch == 'x64') ? 'amd64' : process.arch
+  fileString = `caddy_${version.substr(1)}_${platform}_${arch}.${ext}`;
+  const latestUrl = `https://github.com/caddyserver/caddy/releases/download/${version}/${fileString}`;
+  return new URL(latestUrl);
+}
+
+async function unzip() {
+  await decompress(fileString, '.', {
+    filter: file => file.path.includes("caddy")
+  });
+  fs.unlinkSync(fileString);
+}
+
+async function downloadFile(downloadUrl) {
+  downloadUrl.headers = { 'User-Agent': 'Node.js' };
+  https.get(downloadUrl, (res) => {
+    if (res.statusCode === 302 && res.headers.location) {
+      // If a redirect is encountered, follow the new location
+      downloadFile(new URL(res.headers.location));
+    } else if (res.statusCode === 200) {
+      const writeStream = fs.createWriteStream(fileString);
+
+      res.pipe(writeStream);
+
+      writeStream.on('finish', () => {
+        writeStream.close();
+        unzip()
+        console.log('Download Completed');
+      });
+    } else {
+      console.error(`Failed to download. HTTP status code: ${res.statusCode}`);
+    }
+  });
+}
+
+const downloadUrl = await getLatestReleaseUrl();
+
+await downloadFile(downloadUrl);
