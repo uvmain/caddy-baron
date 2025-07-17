@@ -1,4 +1,9 @@
 # caddy-baron
+
+```
+npm i -D caddy-baron
+```
+
 Downloads the latest Caddy binary for use in npm/npx scripts
 
 - Downloads the latest version of Caddy
