@@ -1,6 +1,6 @@
 {
   "name": "caddy-baron",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Downloads the Caddy binary for use in npx scripts",
   "author": "Ian Baron",
   "license": "MIT",
