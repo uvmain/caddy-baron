@@ -1,9 +1,8 @@
 # caddy-baron
-Downloads Caddy for use in npm/npx scripts
+Downloads the latest Caddy binary for use in npm/npx scripts
 
 - Downloads the latest version of Caddy
-- No dependency on the unmaintained "download" package
-- Use with npm-run-all to run Caddy in parallel with your application, eg:
+- Use with concurrent or npm-run-all to run Caddy in parallel with your application, eg:
 
 ````
 "scripts": {
@@ -12,3 +11,15 @@ Downloads Caddy for use in npm/npx scripts
     "dev": "run-p caddy local-https",
 }
 ````
+
+# example Caddyfile
+```
+dev.localhost {
+    handle /api/* {
+        reverse_proxy localhost:3000
+    }
+    handle {
+        reverse_proxy localhost:4000
+    }
+}
+```

@@ -1,16 +1,16 @@
 {
   "name": "caddy-baron",
-  "version": "2.0.1",
-  "description": "Install Caddy",
-  "bin": {
-    "caddy": "./caddy"
-  },
-  "scripts": {
-    "install": "node index.mjs"
-  },
+  "version": "3.0.0",
+  "description": "Downloads the Caddy binary for use in npx scripts",
+  "author": "Ian Baron",
+  "license": "MIT",
+  "homepage": "https://github.com/uvmain/caddy-baron#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/uvmain/caddy-baron.git"
+  },
+  "bugs": {
+    "url": "https://github.com/uvmain/caddy-baron/issues"
   },
   "keywords": [
     "caddy",
@@ -19,13 +19,18 @@
     "tls",
     "ssl"
   ],
-  "author": "Ian Baron",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/uvmain/caddy-baron/issues"
+  "bin": {
+    "caddy": "./caddy"
   },
-  "homepage": "https://github.com/uvmain/caddy-baron#readme",
+  "scripts": {
+    "install": "node index.mjs",
+    "lint": "eslint"
+  },
   "dependencies": {
     "decompress": "^4.2.1"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^4.17.0",
+    "eslint": "^9.31.0"
   }
 }

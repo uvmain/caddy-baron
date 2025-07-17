@@ -1,88 +1,132 @@
-import decompress from 'decompress';
-import fs from 'fs';
-import https from 'https';
-import { URL } from 'url';
+import { copyFileSync, createWriteStream, existsSync, rmSync, unlinkSync } from 'node:fs'
+import os from 'node:os'
+import { pipeline } from 'node:stream/promises'
+import { URL } from 'node:url'
+import decompress from 'decompress'
 
-let fileString = '';
-const options = { headers: { 'User-Agent': 'Node.js' } };
+const platform = os.platform()
+const arch = os.arch()
+
+let fileString = ''
+let target = ''
 
 async function getLatestReleaseTag() {
-  const latestUrl = new URL('https://api.github.com/repos/caddyserver/caddy/releases/latest');
+  const url = new URL('https://api.github.com/repos/caddyserver/caddy/releases/latest')
 
-  return new Promise((resolve, reject) => {
-    const request = https.get(latestUrl, options, (res) => {
-      if (res.statusCode === 302 && res.headers.location) {
-        resolve(new URL(res.headers.location));
-      } else {
-        let rawData = '';
-        res.on('data', (chunk) => {
-          rawData += chunk;
-        });
-        res.on('end', () => {
-          const parsedData = JSON.parse(rawData);
-          resolve(parsedData.tag_name);
-        });
-      }
-    });
+  try {
+    const response = await fetch(url, { redirect: 'follow' })
 
-    request.on('error', (error) => {
-      reject(error);
-    });
-  });
+    if (!response.ok) {
+      throw new Error(`Failed to get latest release tag: ${response.status}`)
+    }
+    const json = await response.json()
+    if (!json.tag_name) {
+      throw new Error('No tag_name found in the latest release data')
+    }
+    return json.tag_name
+  }
+  catch (error) {
+    console.error('Error fetching latest release:', error)
+    throw error
+  }
+}
+
+function getTarget() {
+  if (platform === 'win32') {
+    if (arch === 'x64') {
+      target = 'windows_amd64.zip'
+    }
+    else if (arch === 'arm64') {
+      target = 'windows_arm64.zip'
+    }
+    else {
+      throw new Error(`Unsupported architecture: ${arch} for Windows`)
+    }
+  }
+  else if (platform === 'darwin') {
+    if (arch === 'x64') {
+      target = 'mac_amd64.tar.gz'
+    }
+    else if (arch === 'arm64') {
+      target = 'mac_arm64.tar.gz'
+    }
+    else {
+      throw new Error(`Unsupported architecture: ${arch} for Darwin`)
+    }
+  }
+  else if (platform === 'linux') {
+    if (arch === 'x64') {
+      target = 'linux_amd64.tar.gz'
+    }
+    else if (arch === 'arm64') {
+      target = 'linux_arm64.tar.gz'
+    }
+    else {
+      throw new Error(`Unsupported architecture: ${arch} for Linux`)
+    }
+  }
+  else {
+    throw new Error('Unsupported platform/architecture.')
+  }
+  return target
 }
 
 async function getLatestReleaseUrl() {
-  const version = await getLatestReleaseTag();
-  let platform = process.platform;
-  let ext = 'tar.gz';
+  const version = await getLatestReleaseTag()
+  target = getTarget()
 
-  switch (process.platform) {
-    case 'darwin':
-      platform = 'mac';
-      break;
-    case 'win32':
-      platform = 'windows';
-      ext = 'zip';
-      break;
+  fileString = `caddy_${version.substr(1)}_${target}`
+  const latestUrl = `https://github.com/caddyserver/caddy/releases/download/${version}/${fileString}`
+  console.log(`Latest release URL: ${latestUrl}`)
+  return new URL(latestUrl)
+}
+
+function cleanup() {
+  if (existsSync(fileString)) {
+    unlinkSync(fileString)
   }
-
-  const arch = process.arch === 'x64' ? 'amd64' : process.arch;
-  fileString = `caddy_${version.substr(1)}_${platform}_${arch}.${ext}`;
-  const latestUrl = `https://github.com/caddyserver/caddy/releases/download/${version}/${fileString}`;
-  return new URL(latestUrl);
+  if (existsSync('./__MACOSX')) {
+    rmSync('./__MACOSX', { recursive: true, force: true })
+  }
 }
 
 async function unzip() {
-  await decompress(fileString, '.', {
-    filter: (file) => file.path.includes('caddy'),
-  });
-  fs.unlinkSync(fileString);
+  try {
+    await decompress(fileString, '.', {
+      filter: file => file.path.includes('caddy'),
+    })
+    cleanup()
+  }
+  catch (err) {
+    console.error(err)
+  }
 }
 
-async function downloadFile(downloadUrl) {
-  const request = https.get(downloadUrl, options, (res) => {
-    if (res.statusCode === 302 && res.headers.location) {
-      downloadFile(new URL(res.headers.location));
-    } else if (res.statusCode === 200) {
-      const writeStream = fs.createWriteStream(fileString);
+async function downloadFile(url) {
+  try {
+    const response = await fetch(url, { redirect: 'follow', headers: { 'User-Agent': 'Node.js' } })
 
-      res.pipe(writeStream);
-
-      writeStream.on('finish', () => {
-        writeStream.close();
-        unzip();
-        console.log('Download Completed');
-      });
-    } else {
-      console.error(`Failed to download. HTTP status code: ${res.statusCode}`);
+    if (!response.ok) {
+      throw new Error(`Failed to download file: ${response.status} ${response.statusText}`)
     }
-  });
 
-  request.on('error', (error) => {
-    console.error('Error:', error);
-  });
+    const writeStream = createWriteStream(fileString)
+
+    await pipeline(response.body, writeStream)
+
+    await unzip()
+
+    if (platform === 'win32') {
+      copyFileSync('./caddy.exe', './caddy')
+    }
+  }
+  catch (err) {
+    console.error('Error downloading zip:', err)
+    cleanup()
+  }
 }
 
-const downloadUrl = await getLatestReleaseUrl();
-
-await downloadFile(downloadUrl);
+(async () => {
+  const downloadUrl = await getLatestReleaseUrl()
+  await downloadFile(downloadUrl)
+})()
