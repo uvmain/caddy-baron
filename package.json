@@ -1,6 +1,7 @@
 {
   "name": "caddy-baron",
-  "version": "3.0.2",
+  "type": "module",
+  "version": "4.0.0",
   "description": "Downloads the Caddy binary for use in npx scripts",
   "author": "Ian Baron",
   "license": "MIT",
@@ -19,18 +20,30 @@
     "tls",
     "ssl"
   ],
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "caddy": "./caddy"
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
-    "install": "node index.mjs",
-    "lint": "eslint"
+    "postinstall": "node dist/index.js",
+    "lint": "eslint",
+    "build": "tsc -p .",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "decompress": "^4.2.1"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^4.17.0",
-    "eslint": "^9.31.0"
+    "@antfu/eslint-config": "^6.1.0",
+    "@types/decompress": "^4.2.7",
+    "@types/node": "^24.9.1",
+    "eslint": "^9.38.0",
+    "typescript": "^5.9.3"
   }
 }
