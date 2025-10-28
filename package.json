@@ -26,6 +26,10 @@
   "bin": {
     "caddy": "./caddy"
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "postinstall": "node dist/index.js",
     "lint": "eslint",
