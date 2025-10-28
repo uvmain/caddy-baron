@@ -27,6 +27,7 @@
     "caddy": "./caddy"
   },
   "scripts": {
+    "postinstall": "node dist/index.js",
     "lint": "eslint",
     "build": "tsc -p .",
     "prepublishOnly": "npm run build"
