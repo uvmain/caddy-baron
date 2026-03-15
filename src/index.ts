@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import { pipeline } from 'node:stream/promises'
 import { URL } from 'node:url'
-import decompress from 'decompress'
+import { decompress } from 'decompress-baron'
 
 type PlatformTarget = 'win32' | 'darwin' | 'linux'
 type ArchTarget = 'x64' | 'arm64'
@@ -75,9 +75,15 @@ function cleanup(): void {
 
 async function unzip(): Promise<void> {
   try {
-    await decompress(fileString, '.', {
+    const files = await decompress(fileString, {
       filter: file => file.path.includes('caddy'),
     })
+    if (files.length === 0) {
+      throw new Error('No caddy file found in the archive')
+    }
+    for (const file of files) {
+      fs.writeFileSync(`./${file.path}`, file.data)
+    }
     cleanup()
   }
   catch (err) {
