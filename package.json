@@ -1,7 +1,7 @@
 {
   "name": "caddy-baron",
   "type": "module",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Downloads the Caddy binary for use in npx scripts",
   "author": "Ian Baron",
   "license": "MIT",
@@ -37,7 +37,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "decompress-baron": "^1.0.1"
+    "decompress-baron": "^1.0.2"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^7.7.2",
