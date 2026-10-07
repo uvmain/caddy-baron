@@ -1,9 +1,11 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "lib": ["ESNext"],
+    "lib": ["DOM", "ESNext"],
+    "rootDir": "./src",
     "module": "esnext",
     "moduleResolution": "bundler",
+    "types": ["node"],
     "strict": true,
     "noUnusedLocals": true,
     "declaration": true,
