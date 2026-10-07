@@ -10,4 +10,10 @@ export default antfu({
     'test/prefer-lowercase-title': 'off',
     'no-undef': 'off',
   },
-}, {})
+}, {
+  ignores: [
+    'dist',
+    'node_modules',
+    'README.md',
+  ],
+})
