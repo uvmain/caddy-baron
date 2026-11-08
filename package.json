@@ -1,7 +1,7 @@
 {
   "name": "caddy-baron",
   "type": "module",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "Downloads the Caddy binary for use in npx scripts",
   "author": "Ian Baron",
   "license": "MIT",
@@ -38,11 +38,15 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "decompress-baron": "^1.0.4"
+    "decompress-baron": "^1.0.5"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^9.5.1",
-    "@types/node": "^26.6.4",
+    "@antfu/eslint-config": "^10.0.0",
+    "@types/node": "^26.6.6",
     "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "katex": "^0.18.1",
+    "minimatch": "^11.0.0"
   }
 }
